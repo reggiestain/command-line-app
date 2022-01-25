@@ -1,0 +1,11 @@
+{
+    "autoload": {
+      "psr-4": {
+        "Bidvestcli\\": "lib/",
+        "App\\": "app/"
+      }
+    },
+    "require": {
+        "respect/validation": "^2.2"
+    }
+}
