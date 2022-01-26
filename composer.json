@@ -6,6 +6,7 @@
       }
     },
     "require": {
-        "respect/validation": "^2.2"
+        "respect/validation": "^2.2",
+        "phplucidframe/console-table": "^1.2"
     }
 }

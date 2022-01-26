@@ -1,8 +1,11 @@
 <?php
 
+
 namespace Bidvestcli;
 
 use Respect\Validation\Validator as v;
+use LucidFrame\Console\ConsoleTable;
+use RecursiveTreeIterator;
 
 class App {
 
@@ -18,7 +21,7 @@ class App {
 
     public function __construct(){
         $this->printer = new CliPrinter();
-        $this->student = new Student();
+        $this->table = new ConsoleTable();
     }
 
     public function getPrinter(){
@@ -27,6 +30,10 @@ class App {
 
     public function getStudent(){
         return $this->student;
+    }
+
+    public function getable(){
+        return $this->table;
     }
 
     public function registerCommand($name, $callable){
@@ -65,9 +72,59 @@ class App {
         if (file_exists($this->file)) {
             $json = file_get_contents($this->file);
             $this->data = json_decode($json, true);
+            $this->getPrinter()->display("Leave fields blank to keep previous value");
             $this->name();
         }else{
-            $this->getPrinter()->display("Id was not found.");
+            $this->getPrinter()->display("Student id was not found.");
+        }
+    }
+
+    public function delete($id){
+        $fileName  =  $id.'.json';
+        $twoDigits =  substr($id, 0, 2);        
+        $this->file     = "student/".$twoDigits."/".$fileName;
+        if (file_exists($this->file)) {
+            if(unlink($this->file)){
+                rmdir("student/".$twoDigits);
+                $this->getPrinter()->display("Student deleted successfully.");
+            }
+        }else{
+            $this->getPrinter()->display("Student id was not found.");
+        }
+    }
+
+    public function search(){
+        $this->getPrinter()->display("Enter search criteria: ");
+        $search = trim(fgets(STDIN, 1024));
+        
+        $jsonFiles = $this->getDirContents('student');
+        $count = sizeof($jsonFiles);
+        foreach ($jsonFiles as $i=>$file) {
+            foreach(json_decode(file_get_contents($file),true) as $index=>$datas){
+                        foreach($datas as $data){
+                                $table[] = $data;
+                        }
+                }
+            }
+            if(isset($search) ? $search: null) {
+                list($key, $val) = explode('=', $search);
+                $cols = array_chunk($table, ceil(count($table)/$count));
+                $this->table->setHeaders(['Id','Name','Surname','Age','Curriculum' ]);
+                    foreach($cols as $col){
+                        $this->table->addRow(
+                            $col
+                        );                      
+                    }
+                $this->table->display(); 
+            }else{
+                $cols = array_chunk($table, ceil(count($table)/$count));
+                $this->table->setHeaders(['Id','Name','Surname','Age','Curriculum' ]);
+                foreach($cols as $col){
+                    $this->table->addRow(
+                        $col
+                    );                      
+                }
+                $this->table->display();
         }
     }
 
@@ -77,7 +134,7 @@ class App {
         $twoDigits  =  substr($id, 0, 2);
         $this->file = "student/".$twoDigits."/".$id.".json";
         if (file_exists($this->file)){
-            $this->getPrinter()->display("Id already exit.");
+            $this->getPrinter()->display("Student id already exit.");
             $this->id();
         }else{  
             if (v::numericVal()->length(7, 7)->notEmpty()->validate(intval($id))) {
@@ -91,26 +148,28 @@ class App {
     }
 
     public function name(){
-        $this->getPrinter()->display("Enter student name: ");
-            $name = trim(fgets(STDIN, 1024));
-            $currentName = isset($this->data[1]['name']) ? $this->data[1]['name']: "";
-            $name = (empty($name)) ? $currentName:$name;
-            if (v::stringType()->length(2, 100)->notEmpty()->validate($name)) {
-                if($currentName){
-                    $this->data[1]['name'] = $name;
-                }else{
-                    array_push($this->data, ['name'=>$name]);
-                }
-                $this->surname();
-            } else {
-                $this->name();
+        $currentName = isset($this->data[1]['name']) ? $this->data[1]['name']: "";
+        $label = $currentName ?"[$currentName]:":":";
+        $this->getPrinter()->display("Enter student name".$label);
+        $name = trim(fgets(STDIN, 1024));      
+        $name = (empty($name)) ? $currentName:$name;
+        if (v::stringType()->length(2, 100)->notEmpty()->validate($name)) {
+            if($currentName){
+                $this->data[1]['name'] = $name;
+            }else{
+                array_push($this->data, ['name'=>$name]);
             }
+            $this->surname();
+        } else {
+            $this->name();
+        }
     }
 
     public function surname(){
-        $this->getPrinter()->display("Enter student surname: ");
-        $surname = trim(fgets(STDIN, 1024));
         $currentSurname = isset($this->data[2]['surname']) ? $this->data[2]['surname']: "";
+        $label = $currentSurname ?"[$currentSurname]:":":";
+        $this->getPrinter()->display("Enter student surname".$label);
+        $surname = trim(fgets(STDIN, 1024));
         $surname = (empty($surname)) ? $currentSurname:$surname;
         if (v::stringType()->length(2,100)->notEmpty()->validate($surname)) {
             if($currentSurname){
@@ -125,9 +184,10 @@ class App {
     }
 
     public function age(){
-        $this->getPrinter()->display("Enter student age: ");
-        $age = trim(fgets(STDIN, 1024));
         $currentAge = isset($this->data[3]['age']) ? $this->data[3]['age']: "";
+        $label = $currentAge ?"[$currentAge]:":":";
+        $this->getPrinter()->display("Enter student age".$label);
+        $age = trim(fgets(STDIN, 1024));       
         $age = (empty($age)) ? $currentAge:$age;
         if (v::numericVal()->notEmpty()->validate(intval($age))) {
             if ($currentAge) {
@@ -142,9 +202,10 @@ class App {
     }
 
     public function curriculum(){
-        $this->getPrinter()->display("Enter student curriculum: ");
-        $culum = trim(fgets(STDIN, 1024));
         $currentCulum = isset($this->data[4]['curriculum']) ? $this->data[4]['curriculum']: "";
+        $label = $currentCulum ?"[$currentCulum]:":":";
+        $this->getPrinter()->display("Enter student curriculum".$label);
+        $culum = trim(fgets(STDIN, 1024));       
         $culum = (empty($culum)) ? $currentCulum:$culum;
         if(v::stringType()->notEmpty()->validate($culum)) {
             if ($currentCulum) {
@@ -185,6 +246,23 @@ class App {
             return true;
         }
     }
+
+    public function getDirContents($dir,$filter = '', &$results = array()) {
+        $files = scandir($dir);
+
+        foreach($files as $key => $value){
+            $path = realpath($dir.DIRECTORY_SEPARATOR.$value); 
+
+            if(!is_dir($path)) {
+                if(empty($filter) || preg_match($filter, $path)) $results[] = $path;
+            } elseif($value != "." && $value != "..") {
+                $this->getDirContents($path, $filter, $results);
+            }
+        }
+
+        return $results;
+    }
+    
 
     
 }

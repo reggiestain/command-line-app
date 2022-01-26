@@ -26,10 +26,28 @@ composer install
 
 ```
 
-## run commands
+## Run commands
 
 ``` bash
 
 php run.php php run.php --action=add
+
+```
+
+``` bash
+
+php run.php php run.php --action=edit --id=1234567
+
+```
+
+``` bash
+
+php run.php php run.php --action=delete --id=1234567
+
+```
+
+``` bash
+
+php run.php php run.php --action=search
 
 ```
