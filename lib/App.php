@@ -98,33 +98,37 @@ class App {
         $search = trim(fgets(STDIN, 1024));
         
         $jsonFiles = $this->getDirContents('student');
-        $count = sizeof($jsonFiles);
-        foreach ($jsonFiles as $i=>$file) {
-            foreach(json_decode(file_get_contents($file),true) as $index=>$datas){
-                        foreach($datas as $data){
-                                $table[] = $data;
-                        }
+        if(empty($jsonFiles)){
+         $this->getPrinter()->display("No student data available");
+        }else{
+            $count = sizeof($jsonFiles);
+            foreach ($jsonFiles as $i=>$file) {
+                foreach (json_decode(file_get_contents($file), true) as $index=>$datas) {
+                    foreach ($datas as $data) {
+                        $table[] = $data;
+                    }
                 }
             }
-            if(isset($search) ? $search: null) {
+            if (isset($search) ? $search: null) {
                 list($key, $val) = explode('=', $search);
                 $cols = array_chunk($table, ceil(count($table)/$count));
                 $this->table->setHeaders(['Id','Name','Surname','Age','Curriculum' ]);
-                    foreach($cols as $col){
-                        $this->table->addRow(
-                            $col
-                        );                      
-                    }
-                $this->table->display(); 
-            }else{
-                $cols = array_chunk($table, ceil(count($table)/$count));
-                $this->table->setHeaders(['Id','Name','Surname','Age','Curriculum' ]);
-                foreach($cols as $col){
+                foreach ($cols as $col) {
                     $this->table->addRow(
                         $col
-                    );                      
+                    );
                 }
                 $this->table->display();
+            } else {
+                $cols = array_chunk($table, ceil(count($table)/$count));
+                $this->table->setHeaders(['Id','Name','Surname','Age','Curriculum' ]);
+                foreach ($cols as $col) {
+                    $this->table->addRow(
+                        $col
+                    );
+                }
+                $this->table->display();
+            }
         }
     }
 
