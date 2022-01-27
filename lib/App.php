@@ -19,39 +19,32 @@ class App
 
     protected $file = null;
 
-    public function __construct()
-    {
+    public function __construct(){
         $this->printer = new CliPrinter();
         $this->table = new ConsoleTable();
     }
 
-    public function getPrinter()
-    {
+    public function getPrinter(){
         return $this->printer;
     }
 
-    public function getStudent()
-    {
+    public function getStudent(){
         return $this->student;
     }
 
-    public function getable()
-    {
+    public function getable(){
         return $this->table;
     }
 
-    public function registerCommand($name, $callable)
-    {
+    public function registerCommand($name, $callable){
         $this->registry[$name] = $callable;
     }
 
-    public function getCommand($command)
-    {
+    public function getCommand($command){
         return isset($this->registry[$command]) ? $this->registry[$command] : null;
     }
 
-    public function runCommand(array $argv = [])
-    {
+    public function runCommand(array $argv = []){
         $command_name = null;
 
         if (isset($argv[1])) {
@@ -68,16 +61,14 @@ class App
         call_user_func($command, $argv);
     }
 
-    public function add()
-    {
+    public function add(){
         $this->id();
     }
 
-    public function edit($id)
-    {
+    public function edit($id){
         $fileName  =  $id.'.json';
         $twoDigits =  substr($id, 0, 2);
-        $this->file     = "student/".$twoDigits."/".$fileName;
+        $this->file     = "students/".$twoDigits."/".$fileName;
         if (file_exists($this->file)) {
             $json = file_get_contents($this->file);
             $this->data = json_decode($json, true);
@@ -88,14 +79,13 @@ class App
         }
     }
 
-    public function delete($id)
-    {
+    public function delete($id){
         $fileName  =  $id.'.json';
         $twoDigits =  substr($id, 0, 2);
-        $this->file     = "student/".$twoDigits."/".$fileName;
+        $this->file     = "students/".$twoDigits."/".$fileName;
         if (file_exists($this->file)) {
             if (unlink($this->file)) {
-                rmdir("student/".$twoDigits);
+                rmdir("students/".$twoDigits);
                 $this->getPrinter()->display("Student deleted successfully.");
             }
         } else {
@@ -103,8 +93,7 @@ class App
         }
     }
 
-    public function search()
-    {
+    public function search(){
         $this->getPrinter()->display("Enter search criteria: ");
         $search = trim(fgets(STDIN, 1024));
         
@@ -147,12 +136,11 @@ class App
         }
     }
 
-    public function id()
-    {
+    public function id(){
         $this->getPrinter()->display("Enter student id: ");
         $id = trim(fgets(STDIN, 1024));
         $twoDigits  =  substr($id, 0, 2);
-        $this->file = "student/".$twoDigits."/".$id.".json";
+        $this->file = "students/".$twoDigits."/".$id.".json";
         if (file_exists($this->file)) {
             $this->getPrinter()->display("Student id already exit.");
             $this->id();
@@ -167,8 +155,7 @@ class App
         }
     }
 
-    public function name()
-    {
+    public function name(){
         $currentName = isset($this->data[1]['name']) ? $this->data[1]['name']: "";
         $label = $currentName ?"[$currentName]:":":";
         $this->getPrinter()->display("Enter student name".$label);
@@ -186,8 +173,7 @@ class App
         }
     }
 
-    public function surname()
-    {
+    public function surname(){
         $currentSurname = isset($this->data[2]['surname']) ? $this->data[2]['surname']: "";
         $label = $currentSurname ?"[$currentSurname]:":":";
         $this->getPrinter()->display("Enter student surname".$label);
@@ -240,7 +226,7 @@ class App
             $json      = json_encode($this->data);
             $fileName  =  $this->digits.'.json';
             $twoDigits =  substr($this->digits, 0, 2);
-            $path      = "student/".$twoDigits;
+            $path      = "students/".$twoDigits;
             if ($this->recursive_mkdir($path, 0777, true)) {
                 if (!file_exists($this->file)) {
                     $fp = fopen($path."/".$fileName, 'w');

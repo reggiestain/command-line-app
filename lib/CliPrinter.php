@@ -4,18 +4,15 @@ namespace Bidvestcli;
 
 class CliPrinter
 {
-    public function out($message)
-    {
+    public function out($message){
         echo $message;
     }
 
-    public function newline()
-    {
+    public function newline(){
         $this->out("\n");
     }
 
-    public function display($message)
-    {
+    public function display($message){
         $this->newline();
         $this->out($message);
         $this->newline();
